@@ -7,12 +7,17 @@
 //
 
 #import "AppDelegate.h"
+#import "Constantes.h"
+#import "ParserTuEntrada.h"
 
 @interface AppDelegate ()
 
 @end
 
 @implementation AppDelegate
+
+@synthesize agenda;
+
 
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -123,5 +128,38 @@
         }
     }
 }
+
+
+- (void) backgroundParser{
+    NSLog(@"Intentando parsear desde AppDelegate");
+    [NSThread detachNewThreadSelector:@selector(parsear) toTarget:self withObject:nil];
+}
+
+- (BOOL) parsear{
+    
+    NSURL *url = [[NSURL alloc] initWithString:URL_RSS_TUENTRADA];
+    NSData *data = [[NSData alloc] initWithContentsOfURL:url];
+    
+    NSXMLParser *xmlParser = [[NSXMLParser alloc] initWithData:data];
+    
+    ParserTuEntrada *tuEntradaParser = [[ParserTuEntrada alloc] initParser];
+    
+    [xmlParser setDelegate:tuEntradaParser];
+    
+    BOOL worked = [xmlParser parse];
+    
+    if (worked){
+        NSLog(@" # items agenda: %lu", (unsigned long)[agenda count]);
+        ItemAgenda *unItem = [[ItemAgenda alloc] init];
+        unItem = [ agenda objectAtIndex:1];
+        NSLog(@"Segundo Elemento: \n Nombre: %@ \n Fecha: %@ \n Link: %@ \n Imagen: %@ \n Tipo: %@" , unItem.nombre, unItem.fecha, unItem.link, unItem.logoId, unItem.ciudad);
+    }else{
+        NSLog(@"No Funciono...");
+    }
+    
+    return worked;
+    
+}
+
 
 @end
